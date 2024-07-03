@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-        with:
-          persist-credentials: false # Disable automatic token persistence
 
       - name: Generate the snake files in './dist/'
         uses: Platane/snk@v3
@@ -35,16 +33,20 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Ensure output branch exists
+      - name: Create or checkout output branch
         run: |
-          git fetch
-          git checkout output || git checkout -b output
-          git reset --hard origin/output || git reset --hard origin/main
+          git fetch origin
+          if git rev-parse --verify origin/output; then
+            git checkout output
+            git reset --hard origin/output
+          else
+            git checkout -b output
+          fi
 
-      - name: Push new files to the output branch
+      - name: Copy snake files to the output branch
         run: |
           git add dist/*
-          git commit -m "Update snake animations"
-          git push origin output --force
+          git commit -m "Update snake animations" || echo "No changes to commit"
+          git push origin output
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
