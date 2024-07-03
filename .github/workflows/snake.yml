@@ -28,8 +28,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Show build status
-        run: git status
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create output branch if not exists
+        run: |
+          git fetch
+          git switch -C output || git switch -c output
 
       - name: Push new files to the output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
